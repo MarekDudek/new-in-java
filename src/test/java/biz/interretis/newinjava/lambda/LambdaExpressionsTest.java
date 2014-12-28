@@ -83,4 +83,27 @@ public class LambdaExpressionsTest {
         // then
         assertThat(women, hasSize(47));
     }
+
+    @Test
+    public void generic_processing_declared() {
+
+        // given
+        final Collection<Person> people = generator.randomCollection(100);
+        final Collection<String> women = synchronizedList(newArrayList());
+
+        // when
+        final Predicate<? super Person> womenOnly =
+                person -> person.getGender() == Sex.FEMALE;
+
+        final Function<? super Person, ? extends String> personsEmail =
+                person -> person.getEmailAddress();
+
+        final Consumer<? super String> addToCollection =
+                (email) -> women.add(email);
+
+        people.parallelStream().filter(womenOnly).map(personsEmail).forEach(addToCollection);
+
+        // then
+        assertThat(women, hasSize(47));
+    }
 }
