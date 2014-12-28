@@ -3,11 +3,14 @@ package biz.interretis.newinjava;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Random;
 
 import biz.interretis.newinjava.Person.Sex;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class PersonGenerator {
@@ -49,6 +52,15 @@ public class PersonGenerator {
         person.setEmailAddress(randomEmailAddress(person));
 
         return person;
+    }
+
+    public Collection<Person> randomCollection(final int length) {
+
+        final List<Person> people = Lists.newArrayList();
+        for (int i = 0; i < length; i++) {
+            people.add(randomPerson());
+        }
+        return people;
     }
 
     private String randomName(final Person person) {

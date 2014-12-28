@@ -1,7 +1,10 @@
 package biz.interretis.newinjava.lambda;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+
+import java.util.Collection;
 
 import org.junit.Test;
 
@@ -32,12 +35,12 @@ public class PersonGeneratorTest {
 
         // given
         final PersonGenerator generator = new PersonGenerator();
+        final int size = 10_000;
 
         // when
-        for (int i = 0; i < 10_000; i++) {
-            generator.randomPerson();
-        }
+        final Collection<Person> people = generator.randomCollection(size);
 
-        // then it doesn't break
+        // then
+        assertThat(people, hasSize(size));
     }
 }
