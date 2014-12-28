@@ -96,7 +96,7 @@ public class LambdaExpressionsTest {
                 person -> person.getGender() == Sex.FEMALE;
 
         final Function<? super Person, ? extends String> personsEmail =
-                person -> person.getEmailAddress();
+                Person::getEmailAddress;
 
         final Consumer<? super String> addToCollection =
                 (email) -> women.add(email);
