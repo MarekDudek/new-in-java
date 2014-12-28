@@ -65,13 +65,19 @@ public class PersonGenerator {
 
     private String randomName(final Person person) {
 
-        switch (person.getGender()) {
-        case FEMALE:
-            return FEMALE_NAMES[generator.nextInt(FEMALE_NAMES.length)];
-        case MALE:
-            return MALE_NAMES[generator.nextInt(MALE_NAMES.length)];
-        default:
-            throw new IllegalArgumentException();
+        final Sex gender = person.getGender();
+        switch (gender) {
+            case FEMALE: {
+                final int randomIndex = generator.nextInt(FEMALE_NAMES.length);
+                return FEMALE_NAMES[randomIndex];
+            }
+            case MALE: {
+                final int randomIndex = generator.nextInt(MALE_NAMES.length);
+                return MALE_NAMES[randomIndex];
+            }
+            default: {
+                throw new IllegalArgumentException(String.valueOf(gender));
+            }
         }
     }
 
