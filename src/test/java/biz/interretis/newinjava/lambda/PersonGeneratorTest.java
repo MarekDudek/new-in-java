@@ -11,7 +11,7 @@ import biz.interretis.newinjava.PersonGenerator;
 public class PersonGeneratorTest {
 
     @Test
-    public void test() {
+    public void person_is_generated_properly() {
 
         // given
         final PersonGenerator generator = new PersonGenerator();
@@ -25,5 +25,19 @@ public class PersonGeneratorTest {
         assertThat(person.getBirthday(), notNullValue());
         assertThat(person.getGender(), notNullValue());
         assertThat(person.getEmailAddress(), notNullValue());
+    }
+
+    @Test
+    public void long_number_of_persons_is_generated_properly() {
+
+        // given
+        final PersonGenerator generator = new PersonGenerator();
+
+        // when
+        for (int i = 0; i < 10_000; i++) {
+            generator.randomPerson();
+        }
+
+        // then it doesn't break
     }
 }

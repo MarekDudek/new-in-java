@@ -2,6 +2,8 @@ package biz.interretis.newinjava;
 
 import java.time.LocalDate;
 
+import com.google.common.base.MoreObjects;
+
 public final class Person {
 
     public enum Sex {
@@ -12,6 +14,16 @@ public final class Person {
     private LocalDate birthday;
     private Sex gender;
     private String emailAddress;
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("name", name)
+                .add("birthday", birthday)
+                .add("gender", gender)
+                .add("e-mail", emailAddress)
+                .toString();
+    }
 
     public String getName() {
         return name;
