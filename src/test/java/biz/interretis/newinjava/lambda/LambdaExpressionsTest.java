@@ -1,11 +1,11 @@
 package biz.interretis.newinjava.lambda;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.synchronizedList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -45,7 +45,7 @@ public class LambdaExpressionsTest {
 
         // given
         final Collection<Person> people = generator.randomCollection(100);
-        final List<Person> women = newArrayList();
+        final Collection<Person> women = synchronizedList(newArrayList());
 
         // when
         processPersons(
