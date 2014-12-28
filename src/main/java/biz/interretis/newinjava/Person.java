@@ -2,7 +2,7 @@ package biz.interretis.newinjava;
 
 import java.time.LocalDate;
 
-public class Person {
+public final class Person {
 
     public enum Sex {
 	MALE, FEMALE
