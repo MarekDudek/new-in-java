@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -211,5 +212,42 @@ public class LambdaExpressionsTest {
 
         // then
         assertThat(unique, hasSize(100));
+    }
+
+    @Test
+    public void grouping_by_gender() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+
+        // when
+        final Map<Sex, List<Person>> peopleByGender = people.stream()
+                .collect(
+                        Collectors.groupingBy(Person::getGender)
+                );
+
+        // then
+        assertThat(peopleByGender.get(Sex.FEMALE), hasSize(47));
+        assertThat(peopleByGender.get(Sex.MALE), hasSize(53));
+    }
+
+    @Test
+    public void grouping_by_two_criteria() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+
+        // when
+        final Map<Sex, Map<String, List<Person>>> peopleBySexAndName = people.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Person::getGender,
+                                Collectors.groupingBy(Person::getName)
+                                )
+                );
+
+        // then
+        final List<Person> kentons = peopleBySexAndName.get(Sex.MALE).get("Kenton");
+        assertThat("There are four Kentons population", kentons, hasSize(4));
     }
 }
