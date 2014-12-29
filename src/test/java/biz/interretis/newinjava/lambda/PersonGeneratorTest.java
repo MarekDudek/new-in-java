@@ -38,7 +38,7 @@ public class PersonGeneratorTest {
         final int size = 10_000;
 
         // when
-        final Collection<Person> people = generator.randomCollection(size);
+        final Collection<Person> people = generator.randomList(size);
 
         // then
         assertThat(people, hasSize(size));

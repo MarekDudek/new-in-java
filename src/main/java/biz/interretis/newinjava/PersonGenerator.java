@@ -3,7 +3,6 @@ package biz.interretis.newinjava;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
@@ -54,7 +53,7 @@ public class PersonGenerator {
         return person;
     }
 
-    public Collection<Person> randomCollection(final int length) {
+    public List<Person> randomList(final int length) {
 
         final List<Person> people = Lists.newArrayList();
         for (int i = 0; i < length; i++) {

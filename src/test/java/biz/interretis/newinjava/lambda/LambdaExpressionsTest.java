@@ -3,18 +3,27 @@ package biz.interretis.newinjava.lambda;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.synchronizedList;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import biz.interretis.newinjava.Person;
 import biz.interretis.newinjava.Person.Sex;
+import biz.interretis.newinjava.PersonCompariser;
 import biz.interretis.newinjava.PersonGenerator;
 
 public class LambdaExpressionsTest {
@@ -47,7 +56,7 @@ public class LambdaExpressionsTest {
     public void generic_processing_function() {
 
         // given
-        final Collection<Person> people = generator.randomCollection(100);
+        final Collection<Person> people = generator.randomList(100);
         final Collection<String> women = synchronizedList(newArrayList());
 
         // when
@@ -67,7 +76,7 @@ public class LambdaExpressionsTest {
     public void generic_processing_stream() {
 
         // given
-        final Collection<Person> people = generator.randomCollection(100);
+        final Collection<Person> people = generator.randomList(100);
         final Collection<String> women = synchronizedList(newArrayList());
 
         // when
@@ -88,7 +97,7 @@ public class LambdaExpressionsTest {
     public void generic_processing_declared() {
 
         // given
-        final Collection<Person> people = generator.randomCollection(100);
+        final Collection<Person> people = generator.randomList(100);
         final Collection<String> women = synchronizedList(newArrayList());
 
         // when
@@ -105,5 +114,102 @@ public class LambdaExpressionsTest {
 
         // then
         assertThat(women, hasSize(47));
+    }
+
+    @Test
+    public void comparing_with_static_method_reference() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+
+        // when
+        Collections.sort(people, Person::compareByAge);
+
+        // then
+        final Person first = people.get(0);
+        final Person second = people.get(1);
+
+        assertThat(first.getBirthday(), is(lessThan(second.getBirthday())));
+    }
+
+    @Test
+    public void comparing_with_instance_method_reference_of_particular_object() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+        final PersonCompariser compariser = new PersonCompariser();
+
+        // when
+        Collections.sort(people, compariser::compareByName);
+
+        // then
+        final Person second = people.get(1);
+        final Person third = people.get(2);
+
+        assertThat(second.getName(), is(lessThan(third.getName())));
+    }
+
+    @Test
+    public void comparing_with_instance_method_reference_of_particular_type() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+        final List<String> emails = people
+                .stream()
+                .map(Person::getEmailAddress)
+                .sorted()
+                .collect(Collectors.toList());
+
+        // when
+        Collections.sort(emails, String::compareToIgnoreCase);
+
+        // then
+        final String second = emails.get(1);
+        final String third = emails.get(2);
+
+        assertThat(second, is(lessThan(third)));
+    }
+
+    public static <ELEMENT, SOURCE extends Collection<ELEMENT>, TARGET extends Collection<ELEMENT>>
+            TARGET transferElements
+            (
+                    final SOURCE sourceCollection,
+                    final Supplier<TARGET> collectionFactory
+            )
+    {
+        final TARGET targetCollection = collectionFactory.get();
+        for (final ELEMENT element : sourceCollection) {
+            targetCollection.add(element);
+        }
+        return targetCollection;
+    }
+
+    @Test
+    public void using_supplier() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+
+        // when
+        final Set<Person> unique = transferElements(people,
+                () -> {
+                    return new HashSet<>();
+                });
+
+        // then
+        assertThat(unique, hasSize(100));
+    }
+
+    @Test
+    public void using_constructor_reference_for_supplier() {
+
+        // given
+        final List<Person> people = generator.randomList(100);
+
+        // when
+        final Set<Person> unique = transferElements(people, HashSet<Person>::new);
+
+        // then
+        assertThat(unique, hasSize(100));
     }
 }

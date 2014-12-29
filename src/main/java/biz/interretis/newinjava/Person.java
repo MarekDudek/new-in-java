@@ -25,6 +25,10 @@ public final class Person {
                 .toString();
     }
 
+    public static int compareByAge(final Person first, final Person second) {
+        return first.birthday.compareTo(second.birthday);
+    }
+
     public String getName() {
         return name;
     }
