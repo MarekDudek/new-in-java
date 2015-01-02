@@ -4,11 +4,12 @@ import java.time.Duration;
 
 public class ComputationsSimulator {
 
-    public static final double ANSWER_TO_ULTIMATE_QUESTION = 42.0;
+    public static final int ANSWER_TO_ULTIMATE_QUESTION = 42;
 
     static final long DEFAULT_DELAY = 1000L;
+    public static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
-    public static Double doSomeLongComputation(final Duration duration) {
+    public static Integer doSomeLongComputation(final Duration duration) {
 
         delay(duration);
 
@@ -20,12 +21,7 @@ public class ComputationsSimulator {
         delay(duration);
     }
 
-    public static void delay() {
-
-        delay(Duration.ofMillis(DEFAULT_DELAY));
-    }
-
-    private static void delay(final Duration duration)
+    public static void delay(final Duration duration)
     {
         try {
             Thread.sleep(duration.toMillis());

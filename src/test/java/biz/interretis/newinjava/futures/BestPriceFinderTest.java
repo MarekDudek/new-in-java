@@ -1,8 +1,10 @@
 package biz.interretis.newinjava.futures;
 
+import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomethingElse;
 import static java.time.Clock.systemUTC;
 import static java.time.Duration.between;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
@@ -26,20 +28,19 @@ public class BestPriceFinderTest {
         // when
         final Instant start = clock.instant();
 
-        final Future<Double> price = shop.getPriceAsynch("my favorite product");
+        final Future<Double> price = shop.getPriceAsynch("my favorite product", ONE_SECOND);
         final Instant invocationReturned = clock.instant();
-
-        doSomethingElse(Duration.ofSeconds(1));
 
         // then
         assertThat(between(start, invocationReturned), lessThan(Duration.ofMillis(50)));
 
         // when
+        doSomethingElse(ONE_SECOND);
         price.get();
 
         final Instant valueRetrieved = clock.instant();
 
         // then
-        assertThat(between(start, valueRetrieved), greaterThan(Duration.ofSeconds(1)));
+        assertThat(between(start, valueRetrieved), both(greaterThan(ONE_SECOND)).and(lessThan(Duration.ofMillis(1050))));
     }
 }

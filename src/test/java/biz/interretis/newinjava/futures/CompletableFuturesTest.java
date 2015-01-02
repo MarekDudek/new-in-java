@@ -1,6 +1,7 @@
 package biz.interretis.newinjava.futures;
 
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ANSWER_TO_ULTIMATE_QUESTION;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomeLongComputation;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomethingElse;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -26,10 +27,10 @@ public class CompletableFuturesTest {
         final ExecutorService executor = newCachedThreadPool();
 
         // when
-        final Future<Double> future = executor.submit(new Callable<Double>() {
+        final Future<Integer> future = executor.submit(new Callable<Integer>() {
             @Override
-            public Double call() {
-                return doSomeLongComputation(Duration.ofMillis(1000));
+            public Integer call() {
+                return doSomeLongComputation(ONE_SECOND);
             }
         });
 
@@ -38,7 +39,7 @@ public class CompletableFuturesTest {
         // then
         assertThat(future.isDone(), is(true));
 
-        final Double answer = future.get(1, TimeUnit.MILLISECONDS);
+        final Integer answer = future.get(1, TimeUnit.MILLISECONDS);
         assertThat(answer, is(equalTo(ANSWER_TO_ULTIMATE_QUESTION)));
     }
 
@@ -49,10 +50,10 @@ public class CompletableFuturesTest {
         final ExecutorService executor = newCachedThreadPool();
 
         // when
-        final Future<Double> future = executor.submit(new Callable<Double>() {
+        final Future<Integer> future = executor.submit(new Callable<Integer>() {
             @Override
-            public Double call() {
-                return doSomeLongComputation(Duration.ofMillis(1000));
+            public Integer call() {
+                return doSomeLongComputation(ONE_SECOND);
             }
         });
 
@@ -61,7 +62,7 @@ public class CompletableFuturesTest {
         // then
         assertThat(future.isDone(), is(false));
 
-        future.get(1, TimeUnit.MILLISECONDS);
+        future.get(1, TimeUnit.MILLISECONDS); // throws exception
     }
 
     @Test(expected = TimeoutException.class)
@@ -71,13 +72,13 @@ public class CompletableFuturesTest {
         final ExecutorService executor = newCachedThreadPool();
 
         // when
-        final Future<Double> future = executor.submit(() -> doSomeLongComputation(Duration.ofMillis(1000)));
+        final Future<Integer> future = executor.submit(() -> doSomeLongComputation(ONE_SECOND));
 
         doSomethingElse(Duration.ofMillis(500));
 
         // then
         assertThat(future.isDone(), is(false));
 
-        future.get(1, TimeUnit.MILLISECONDS);
+        future.get(1, TimeUnit.MILLISECONDS);// throws exception
     }
 }
