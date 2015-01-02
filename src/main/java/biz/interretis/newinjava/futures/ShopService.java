@@ -56,4 +56,14 @@ public class ShopService {
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }
+
+    public List<String> findPricesFixed(final List<Shop> shops, final String product, final Duration duration) {
+
+        return shops.parallelStream()
+                .map(shop -> CompletableFuture.supplyAsync(
+                        () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
+                        ))
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+    }
 }
