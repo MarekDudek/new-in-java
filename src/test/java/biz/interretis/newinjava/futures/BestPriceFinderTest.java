@@ -3,14 +3,18 @@ package biz.interretis.newinjava.futures;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_AND_A_TENTH_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TENTH_OF_SECOND;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_AND_A_FIFTN_OF_SECOND;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_SECONDS;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomethingElse;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.time.Clock.systemUTC;
 import static java.time.Duration.between;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
@@ -25,15 +29,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 public class BestPriceFinderTest {
 
     private Shop shop;
-    private List<Shop> shops;
-    private int shopsCount;
+
+    private List<Shop> shopsHalfOfProcessors;
+    private int halfOfProcessors;
+
+    private List<Shop> shopsAllProcessors;
+    private int allProcessors;
 
     private ShopService shopService;
 
@@ -45,18 +52,21 @@ public class BestPriceFinderTest {
         // given
 
         shop = new Shop("BestShop");
-        shops = newArrayList
-                (
-                        new Shop("BestPrice"),
-                        new Shop("LetsSaveBig"),
-                        new Shop("MyFavoriteShop"),
-                        new Shop("BuyItAll")// ,
-                // new Shop("Shop #5"),
-                // new Shop("Shop #6"),
-                // new Shop("Shop #7"),
-                // new Shop("Shop #8")
-                );
-        shopsCount = shops.size();
+
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        shopsHalfOfProcessors = newArrayList();
+        for (int i = 0; i < availableProcessors / 2; i++) {
+            shopsHalfOfProcessors.add(new Shop("Shop #" + i));
+        }
+
+        shopsAllProcessors = newArrayList();
+        for (int i = 0; i < availableProcessors; i++) {
+            shopsAllProcessors.add(new Shop("Shop #" + i));
+        }
+
+        halfOfProcessors = shopsHalfOfProcessors.size();
+        allProcessors = shopsAllProcessors.size();
 
         shopService = new ShopService();
 
@@ -86,7 +96,7 @@ public class BestPriceFinderTest {
         // then
         assertThat(
                 between(start, valueRetrieved),
-                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
     }
 
     @Test(expected = TimeoutException.class)
@@ -111,7 +121,7 @@ public class BestPriceFinderTest {
         } catch (final ExecutionException ex) {
             // then
             final Throwable cause = ex.getCause();
-            assertThat(cause, Matchers.instanceOf(StringIndexOutOfBoundsException.class));
+            assertThat(cause, instanceOf(StringIndexOutOfBoundsException.class));
         }
     }
 
@@ -121,15 +131,18 @@ public class BestPriceFinderTest {
         // when
         final Instant start = clock.instant();
 
-        final List<String> prices = shopService.findPricesSerial(shops, "my favorite product", ONE_SECOND);
+        final List<String> prices = shopService.findPricesSerial(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        assertThat(prices, hasSize(shopsCount));
+        assertThat(prices, hasSize(halfOfProcessors));
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(Duration.of(shopsCount, SECONDS))).and(lessThan(Duration.of(shopsCount + 1, SECONDS))));
+                both(
+                        greaterThanOrEqualTo(Duration.of(halfOfProcessors, SECONDS))).and(
+                        lessThan(Duration.of(halfOfProcessors, SECONDS)
+                                .plus(Duration.of(halfOfProcessors * 100, MILLIS)))));
     }
 
     @Test
@@ -138,17 +151,17 @@ public class BestPriceFinderTest {
         // when
         final Instant start = clock.instant();
 
-        final List<String> prices = shopService.findPricesParallel(shops, "my favorite product", ONE_SECOND);
+        final List<String> prices = shopService.findPricesParallel(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        final int shopsCount = shops.size();
+        final int shopsCount = shopsHalfOfProcessors.size();
         assertThat(prices, hasSize(shopsCount));
 
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
     }
 
     @Test
@@ -158,12 +171,12 @@ public class BestPriceFinderTest {
         final Instant start = clock.instant();
 
         final List<CompletableFuture<String>> priceFutures =
-                shopService.findPriceFutures(shops, "my favorite product", ONE_SECOND);
+                shopService.findPriceFutures(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant invocationReturned = clock.instant();
 
         // then
-        assertThat(priceFutures, hasSize(shopsCount));
+        assertThat(priceFutures, hasSize(halfOfProcessors));
 
         assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
 
@@ -175,11 +188,42 @@ public class BestPriceFinderTest {
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        assertThat(prices, hasSize(shopsCount));
+        assertThat(prices, hasSize(halfOfProcessors));
 
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
+
+    @Test
+    public void multiple_servers_asynch_api__futures__all_processors() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<CompletableFuture<String>> priceFutures =
+                shopService.findPriceFutures(shopsAllProcessors, "my favorite product", ONE_SECOND);
+
+        final Instant invocationReturned = clock.instant();
+
+        // then
+        assertThat(priceFutures, hasSize(allProcessors));
+
+        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
+
+        // when
+        final List<String> prices = priceFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(allProcessors));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThanOrEqualTo(TWO_SECONDS)).and(lessThan(TWO_AND_A_FIFTN_OF_SECOND)));
     }
 
     @Test
@@ -189,16 +233,35 @@ public class BestPriceFinderTest {
         final Instant start = clock.instant();
 
         final List<String> prices =
-                shopService.findPrices(shops, "my favorite product", ONE_SECOND);
+                shopService.findPrices(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        assertThat(prices, hasSize(shopsCount));
+        assertThat(prices, hasSize(halfOfProcessors));
 
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
+
+    @Test
+    public void multiple_servers_synch_api__futures__all_processors() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices =
+                shopService.findPrices(shopsAllProcessors, "my favorite product", ONE_SECOND);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(allProcessors));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThanOrEqualTo(TWO_SECONDS)).and(lessThan(TWO_AND_A_FIFTN_OF_SECOND)));
     }
 
     @Test
@@ -208,34 +271,60 @@ public class BestPriceFinderTest {
         final Instant start = clock.instant();
 
         final List<String> prices =
-                shopService.findPricesBroken(shops, "my favorite product", ONE_SECOND);
+                shopService.findPricesBroken(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        assertThat(prices, hasSize(shopsCount));
+        assertThat(prices, hasSize(halfOfProcessors));
 
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(Duration.of(shopsCount, SECONDS))).and(lessThan(Duration.of(shopsCount + 1, SECONDS))));
+                both(
+                        greaterThanOrEqualTo(Duration.of(halfOfProcessors, SECONDS))).and(
+                        lessThan(Duration.of(halfOfProcessors, SECONDS)
+                                .plus(Duration.of(halfOfProcessors * 100, MILLIS)))));
     }
 
     @Test
+    // processors
     public void multiple_servers_synch_api__futures__fixed() {
 
         // when
         final Instant start = clock.instant();
 
         final List<String> prices =
-                shopService.findPricesFixed(shops, "my favorite product", ONE_SECOND);
+                shopService.findPricesFixed(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        assertThat(prices, hasSize(shopsCount));
+        assertThat(prices, hasSize(halfOfProcessors));
 
         assertThat(
                 between(start, valuesRetrieved),
-                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
+
+    @Test
+    public void multiple_servers_synch_api__futures__fixed__all_processors() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices =
+                shopService.findPricesFixed(shopsAllProcessors, "my favorite product", ONE_SECOND);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(allProcessors));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(
+                        greaterThanOrEqualTo(Duration.ofSeconds(4))).and(
+                        lessThan(Duration.of(allProcessors / 2, SECONDS)
+                                .plus(Duration.of(allProcessors / 2 * 100, MILLIS)))));
     }
 }
