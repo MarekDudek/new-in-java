@@ -50,7 +50,11 @@ public class BestPriceFinderTest {
                         new Shop("BestPrice"),
                         new Shop("LetsSaveBig"),
                         new Shop("MyFavoriteShop"),
-                        new Shop("BuyItAll")
+                        new Shop("BuyItAll")// ,
+                // new Shop("Shop #5"),
+                // new Shop("Shop #6"),
+                // new Shop("Shop #7"),
+                // new Shop("Shop #8")
                 );
         shopsCount = shops.size();
 
@@ -61,7 +65,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void asynchronous_method_invocation() throws Exception {
+    public void single_server_asych_api() throws Exception {
 
         // when
         final Instant start = clock.instant();
@@ -86,7 +90,7 @@ public class BestPriceFinderTest {
     }
 
     @Test(expected = TimeoutException.class)
-    public void asynchronous_method_invocation__with_unhandled_error() throws Exception {
+    public void single_server_asych_api__unhandled_error() throws Exception {
 
         // when
         final Future<Double> price = shop.getPriceAsynch("p", TENTH_OF_SECOND);
@@ -97,7 +101,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void asynchronous_method_invocation__with_error_handled() throws Exception {
+    public void single_server_asych_api__handled_error() throws Exception {
 
         // when
         final Future<Double> price = shop.getPriceAsynchErrorPropagated("p", TENTH_OF_SECOND);
@@ -112,7 +116,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void synchronous_invocation_on_multiple_asynchronous_servers__serial_version() {
+    public void multiple_servers_synch_api__serial_stream() {
 
         // when
         final Instant start = clock.instant();
@@ -129,7 +133,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void synchronous_invocation_on_multiple_asynchronous_servers__parallel_version() {
+    public void multiple_servers_synch_api__parallel_stream() {
 
         // when
         final Instant start = clock.instant();
@@ -148,7 +152,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void asynchronous_invocation_on_multiple_servers__with_completable_futures() {
+    public void multiple_servers_asynch_api__futures() {
 
         // when
         final Instant start = clock.instant();
@@ -179,7 +183,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void synchronous_invocation_on_multiple_servers__with_completable_futures_behind() {
+    public void multiple_servers_synch_api__futures() {
 
         // when
         final Instant start = clock.instant();
@@ -198,7 +202,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void synchronous_invocation_on_multiple_servers__with_completable_futures_behind__broken_version() {
+    public void multiple_servers_synch_api__futures__broken() {
 
         // when
         final Instant start = clock.instant();
@@ -217,7 +221,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void synchronous_invocation_on_multiple_servers__with_completable_futures_behind__fixed_version() {
+    public void multiple_servers_synch_api__futures__fixed() {
 
         // when
         final Instant start = clock.instant();
