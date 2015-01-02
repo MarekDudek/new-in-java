@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -28,11 +29,11 @@ public class CompletableFuturesTest {
         final Future<Double> future = executor.submit(new Callable<Double>() {
             @Override
             public Double call() {
-                return doSomeLongComputation(1000L);
+                return doSomeLongComputation(Duration.ofMillis(1000));
             }
         });
 
-        doSomethingElse(1100L);
+        doSomethingElse(Duration.ofMillis(1100));
 
         // then
         assertThat(future.isDone(), is(true));
@@ -51,11 +52,11 @@ public class CompletableFuturesTest {
         final Future<Double> future = executor.submit(new Callable<Double>() {
             @Override
             public Double call() {
-                return doSomeLongComputation(1000L);
+                return doSomeLongComputation(Duration.ofMillis(1000));
             }
         });
 
-        doSomethingElse(500L);
+        doSomethingElse(Duration.ofMillis(500));
 
         // then
         assertThat(future.isDone(), is(false));
@@ -70,9 +71,9 @@ public class CompletableFuturesTest {
         final ExecutorService executor = newCachedThreadPool();
 
         // when
-        final Future<Double> future = executor.submit(() -> doSomeLongComputation(1000L));
+        final Future<Double> future = executor.submit(() -> doSomeLongComputation(Duration.ofMillis(1000)));
 
-        doSomethingElse(500L);
+        doSomethingElse(Duration.ofMillis(500));
 
         // then
         assertThat(future.isDone(), is(false));

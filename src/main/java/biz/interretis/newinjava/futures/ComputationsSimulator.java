@@ -1,32 +1,34 @@
 package biz.interretis.newinjava.futures;
 
+import java.time.Duration;
+
 public class ComputationsSimulator {
 
     public static final double ANSWER_TO_ULTIMATE_QUESTION = 42.0;
 
     static final long DEFAULT_DELAY = 1000L;
 
-    public static Double doSomeLongComputation(final long millis) {
+    public static Double doSomeLongComputation(final Duration duration) {
 
-        delay(millis);
+        delay(duration);
 
         return ANSWER_TO_ULTIMATE_QUESTION;
     }
 
-    public static void doSomethingElse(final long millis) {
+    public static void doSomethingElse(final Duration duration) {
 
-        delay(millis);
+        delay(duration);
     }
 
     public static void delay() {
 
-        delay(DEFAULT_DELAY);
+        delay(Duration.ofMillis(DEFAULT_DELAY));
     }
 
-    public static void delay(final long millis) {
-
+    private static void delay(final Duration duration)
+    {
         try {
-            Thread.sleep(millis);
+            Thread.sleep(duration.toMillis());
         } catch (final InterruptedException exc) {
             exc.printStackTrace();
         }

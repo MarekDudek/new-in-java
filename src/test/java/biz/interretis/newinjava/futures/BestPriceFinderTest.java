@@ -27,10 +27,9 @@ public class BestPriceFinderTest {
         final Instant start = clock.instant();
 
         final Future<Double> price = shop.getPriceAsynch("my favorite product");
-
         final Instant invocationReturned = clock.instant();
 
-        doSomethingElse(Duration.ofSeconds(1).toMillis());
+        doSomethingElse(Duration.ofSeconds(1));
 
         // then
         assertThat(between(start, invocationReturned), lessThan(Duration.ofMillis(50)));
