@@ -28,8 +28,8 @@ public class ComputationsSimulator {
     {
         try {
             Thread.sleep(duration.toMillis());
-        } catch (final InterruptedException exc) {
-            exc.printStackTrace();
+        } catch (final InterruptedException ex) {
+            ex.printStackTrace();
         }
     }
 }

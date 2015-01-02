@@ -13,8 +13,12 @@ import static org.junit.Assert.assertThat;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class BestPriceFinderTest {
@@ -43,5 +47,37 @@ public class BestPriceFinderTest {
 
         // then
         assertThat(between(start, valueRetrieved), both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
+
+    @Test(expected = TimeoutException.class)
+    public void asynchronous_method_invocation__with_unhandled_error() throws Exception {
+
+        // given
+        final Shop shop = new Shop("BestShop");
+
+        // when
+        final Future<Double> price = shop.getPriceAsynch("p", TENTH_OF_SECOND);
+
+        price.get(1, TimeUnit.SECONDS);
+
+        // then exception is thrown
+    }
+
+    @Test
+    public void asynchronous_method_invocation__with_error_handled() throws Exception {
+
+        // given
+        final Shop shop = new Shop("BestShop");
+
+        // when
+        final Future<Double> price = shop.getPriceAsynchErrorPropagated("p", TENTH_OF_SECOND);
+
+        try {
+            price.get(1, TimeUnit.SECONDS);
+        } catch (final ExecutionException ex) {
+            // then
+            final Throwable cause = ex.getCause();
+            assertThat(cause, Matchers.instanceOf(StringIndexOutOfBoundsException.class));
+        }
     }
 }
