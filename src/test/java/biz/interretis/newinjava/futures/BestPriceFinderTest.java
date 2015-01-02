@@ -5,7 +5,6 @@ import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TENTH_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_AND_A_FIFTN_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_SECONDS;
-import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomethingElse;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.time.Clock.systemUTC;
 import static java.time.Duration.between;
@@ -14,7 +13,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
@@ -23,21 +21,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class BestPriceFinderTest {
-
-    private Shop shop;
 
     private List<Shop> shopsHalfOfProcessors;
     private int halfOfProcessors;
@@ -54,8 +46,6 @@ public class BestPriceFinderTest {
     public void setup() {
 
         // given
-
-        shop = new Shop("BestShop");
 
         final int availableProcessors = Runtime.getRuntime().availableProcessors();
 
@@ -83,58 +73,6 @@ public class BestPriceFinderTest {
         shopService = new ShopService();
 
         clock = systemUTC();
-
-    }
-
-    @Test
-    public void single_server_asych_api() throws Exception {
-
-        // when
-        final Instant start = clock.instant();
-
-        final Future<Double> price = shop.getPriceAsynch("my favorite product", ONE_SECOND);
-
-        final Instant invocationReturned = clock.instant();
-
-        // then
-        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
-
-        // when
-        doSomethingElse(ONE_SECOND);
-        price.get();
-
-        final Instant valueRetrieved = clock.instant();
-
-        // then
-        assertThat(
-                between(start, valueRetrieved),
-                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
-    }
-
-    @Test(expected = TimeoutException.class)
-    public void single_server_asych_api__unhandled_error() throws Exception {
-
-        // when
-        final Future<Double> price = shop.getPriceAsynch("p", TENTH_OF_SECOND);
-
-        price.get(1, TimeUnit.SECONDS);
-
-        // then exception is thrown
-    }
-
-    @Test
-    public void single_server_asych_api__handled_error() throws Exception {
-
-        // when
-        final Future<Double> price = shop.getPriceAsynchErrorPropagated("p", TENTH_OF_SECOND);
-
-        try {
-            price.get(1, TimeUnit.SECONDS);
-        } catch (final ExecutionException ex) {
-            // then
-            final Throwable cause = ex.getCause();
-            assertThat(cause, instanceOf(StringIndexOutOfBoundsException.class));
-        }
     }
 
     @Test
