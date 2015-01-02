@@ -1,6 +1,8 @@
 package biz.interretis.newinjava.futures;
 
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ANSWER_TO_ULTIMATE_QUESTION;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.HALF_A_SECOND;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_AND_A_TENTH_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomeLongComputation;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.doSomethingElse;
@@ -9,7 +11,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -34,7 +35,7 @@ public class CompletableFuturesTest {
             }
         });
 
-        doSomethingElse(Duration.ofMillis(1100));
+        doSomethingElse(ONE_AND_A_TENTH_OF_SECOND);
 
         // then
         assertThat(future.isDone(), is(true));
@@ -57,7 +58,7 @@ public class CompletableFuturesTest {
             }
         });
 
-        doSomethingElse(Duration.ofMillis(500));
+        doSomethingElse(HALF_A_SECOND);
 
         // then
         assertThat(future.isDone(), is(false));
@@ -74,7 +75,7 @@ public class CompletableFuturesTest {
         // when
         final Future<Integer> future = executor.submit(() -> doSomeLongComputation(ONE_SECOND));
 
-        doSomethingElse(Duration.ofMillis(500));
+        doSomethingElse(HALF_A_SECOND);
 
         // then
         assertThat(future.isDone(), is(false));
