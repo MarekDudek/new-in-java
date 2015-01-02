@@ -33,4 +33,17 @@ public class ShopService {
                         )
                 ).collect(Collectors.toList());
     }
+
+    public List<String> findPrices(final List<Shop> shops, final String product, final Duration duration) {
+
+        final List<CompletableFuture<String>> priceFutures = shops.stream()
+                .map(shop -> CompletableFuture.supplyAsync(
+                        () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
+                        )
+                ).collect(Collectors.toList());
+
+        return priceFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+    }
 }
