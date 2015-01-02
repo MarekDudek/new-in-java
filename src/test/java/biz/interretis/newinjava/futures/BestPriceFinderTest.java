@@ -18,10 +18,12 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -31,6 +33,7 @@ public class BestPriceFinderTest {
 
     private Shop shop;
     private List<Shop> shops;
+    private int shopsCount;
 
     private ShopService shopService;
 
@@ -49,6 +52,7 @@ public class BestPriceFinderTest {
                         new Shop("MyFavoriteShop"),
                         new Shop("BuyItAll")
                 );
+        shopsCount = shops.size();
 
         shopService = new ShopService();
 
@@ -57,11 +61,13 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void asynchronous_api_invocation() throws Exception {
+    public void asynchronous_method_invocation() throws Exception {
 
         // when
         final Instant start = clock.instant();
+
         final Future<Double> price = shop.getPriceAsynch("my favorite product", ONE_SECOND);
+
         final Instant invocationReturned = clock.instant();
 
         // then
@@ -106,16 +112,16 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void invocation_on_multiple_asynchronous_servers__serial_version() {
+    public void synchronous_invocation_on_multiple_asynchronous_servers__serial_version() {
 
         // when
         final Instant start = clock.instant();
+
         final List<String> prices = shopService.findPricesSerial(shops, "my favorite product", ONE_SECOND);
+
         final Instant valuesRetrieved = clock.instant();
 
         // then
-        final int shopsCount = shops.size();
-
         assertThat(prices, hasSize(shopsCount));
         assertThat(
                 between(start, valuesRetrieved),
@@ -123,11 +129,13 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void invocation_on_multiple_asynchronous_servers__parallel_version() {
+    public void synchronous_invocation_on_multiple_asynchronous_servers__parallel_version() {
 
         // when
         final Instant start = clock.instant();
+
         final List<String> prices = shopService.findPricesParallel(shops, "my favorite product", ONE_SECOND);
+
         final Instant valuesRetrieved = clock.instant();
 
         // then
@@ -139,4 +147,34 @@ public class BestPriceFinderTest {
                 both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
     }
 
+    @Test
+    public void asynchronous_invocation_on_multiple_servers__with_completable_futures() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<CompletableFuture<String>> priceFutures =
+                shopService.findPriceFutures(shops, "my favorite product", ONE_SECOND);
+
+        final Instant invocationReturned = clock.instant();
+
+        // then
+        assertThat(priceFutures, hasSize(shopsCount));
+
+        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
+
+        // when
+        final List<String> prices = priceFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(shopsCount));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
 }
