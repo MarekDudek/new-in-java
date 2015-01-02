@@ -47,4 +47,8 @@ public class Shop {
 
         return GENERATOR.nextDouble() * product.charAt(0) * product.charAt(1);
     }
+
+    public String getName() {
+        return name;
+    }
 }
