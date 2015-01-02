@@ -8,10 +8,17 @@ import java.util.stream.Collectors;
 
 public class ShopService {
 
-    public List<String> findPrices(final List<Shop> shops, final String product, final Duration duration) {
+    public List<String> findPricesSerial(final List<Shop> shops, final String product, final Duration duration) {
 
         return shops.stream()
                 .map(shop -> format("%s price is %.2f", shop.getName(), shop.getPrice(product, duration)))
-                .collect(Collectors.<String> toList());
+                .collect(Collectors.toList());
+    }
+
+    public List<String> findPricesParallel(final List<Shop> shops, final String product, final Duration duration) {
+
+        return shops.parallelStream()
+                .map(shop -> format("%s price is %.2f", shop.getName(), shop.getPrice(product, duration)))
+                .collect(Collectors.toList());
     }
 }

@@ -31,6 +31,7 @@ public class BestPriceFinderTest {
 
     private Shop shop;
     private List<Shop> shops;
+
     private ShopService shopService;
 
     private Clock clock;
@@ -105,11 +106,11 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void invocation_on_multiple_asynchronous_servers__naive_version() {
+    public void invocation_on_multiple_asynchronous_servers__serial_version() {
 
         // when
         final Instant start = clock.instant();
-        final List<String> prices = shopService.findPrices(shops, "my favorite product", ONE_SECOND);
+        final List<String> prices = shopService.findPricesSerial(shops, "my favorite product", ONE_SECOND);
         final Instant valuesRetrieved = clock.instant();
 
         // then
@@ -120,4 +121,22 @@ public class BestPriceFinderTest {
                 between(start, valuesRetrieved),
                 both(greaterThan(Duration.of(shopsCount, SECONDS))).and(lessThan(Duration.of(shopsCount + 1, SECONDS))));
     }
+
+    @Test
+    public void invocation_on_multiple_asynchronous_servers__parallel_version() {
+
+        // when
+        final Instant start = clock.instant();
+        final List<String> prices = shopService.findPricesParallel(shops, "my favorite product", ONE_SECOND);
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        final int shopsCount = shops.size();
+        assertThat(prices, hasSize(shopsCount));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
+    }
+
 }
