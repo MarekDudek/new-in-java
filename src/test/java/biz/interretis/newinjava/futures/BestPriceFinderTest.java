@@ -385,8 +385,27 @@ public class BestPriceFinderTest {
         assertThat(
                 between(start, valuesRetrieved),
                 both(
-                        greaterThanOrEqualTo(Duration.ofSeconds(4))).and(
+                        greaterThanOrEqualTo(Duration.ofSeconds(3))).and(
                         lessThan(Duration.of(allProcessors / 2, SECONDS)
                                 .plus(Duration.of(allProcessors / 2 * 100, MILLIS)))));
+    }
+
+    @Test
+    public void multiple_servers_synch_api__futures__fixed__all_processors__with_executor() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices =
+                shopService.findPricesFixed(shopsAllProcessors, "my favorite product", ONE_SECOND, executor);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(allProcessors));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
     }
 }

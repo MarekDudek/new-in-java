@@ -89,6 +89,15 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
+    public List<String> findPricesFixed(final List<Shop> shops, final String product, final Duration duration, final Executor executor) {
+
+        return shops
+                .parallelStream()
+                .map(ShopToFuturePriceExecutorMapper.shopToFuturePriceExecutor(product, duration, executor))
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+    }
+
     private static class ShopToPriceMapper implements Function<Shop, String> {
 
         public static final ShopToPriceMapper shopToPrice
