@@ -30,8 +30,8 @@ public class ShopService {
         return shops.stream()
                 .map(shop -> CompletableFuture.supplyAsync(
                         () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
-                        )
-                ).collect(Collectors.toList());
+                        ))
+                .collect(Collectors.toList());
     }
 
     public List<String> findPrices(final List<Shop> shops, final String product, final Duration duration) {
@@ -39,10 +39,20 @@ public class ShopService {
         final List<CompletableFuture<String>> priceFutures = shops.stream()
                 .map(shop -> CompletableFuture.supplyAsync(
                         () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
-                        )
-                ).collect(Collectors.toList());
+                        ))
+                .collect(Collectors.toList());
 
         return priceFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> findPricesBroken(final List<Shop> shops, final String product, final Duration duration) {
+
+        return shops.stream()
+                .map(shop -> CompletableFuture.supplyAsync(
+                        () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
+                        ))
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }

@@ -196,4 +196,23 @@ public class BestPriceFinderTest {
                 between(start, valuesRetrieved),
                 both(greaterThan(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
     }
+
+    @Test
+    public void synchronous_invocation_on_multiple_servers__with_completable_futures_behind__broken_version() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices =
+                shopService.findPricesBroken(shops, "my favorite product", ONE_SECOND);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(shopsCount));
+
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThan(Duration.of(shopsCount, SECONDS))).and(lessThan(Duration.of(shopsCount + 1, SECONDS))));
+    }
 }
