@@ -39,7 +39,7 @@ public class SingleInvocationTest {
     }
 
     @Test
-    public void single_server_asych_api() throws Exception {
+    public void asych_api() throws Exception {
 
         // when
         final Instant start = clock.instant();
@@ -64,7 +64,7 @@ public class SingleInvocationTest {
     }
 
     @Test(expected = TimeoutException.class)
-    public void single_server_asych_api__unhandled_error() throws Exception {
+    public void asych_api__unhandled_error() throws Exception {
 
         // when
         final Future<Double> price = shop.getPriceAsynch("p", TENTH_OF_SECOND);
@@ -75,7 +75,7 @@ public class SingleInvocationTest {
     }
 
     @Test
-    public void single_server_asych_api__handled_error() throws Exception {
+    public void asych_api__handled_error() throws Exception {
 
         // when
         final Future<Double> price = shop.getPriceAsynchErrorPropagated("p", TENTH_OF_SECOND);
@@ -88,5 +88,4 @@ public class SingleInvocationTest {
             assertThat(cause, instanceOf(StringIndexOutOfBoundsException.class));
         }
     }
-
 }

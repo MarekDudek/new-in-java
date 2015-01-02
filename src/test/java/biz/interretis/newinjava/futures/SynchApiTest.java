@@ -2,7 +2,6 @@ package biz.interretis.newinjava.futures;
 
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_AND_A_TENTH_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
-import static biz.interretis.newinjava.futures.ComputationsSimulator.TENTH_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_AND_A_FIFTN_OF_SECOND;
 import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_SECONDS;
 import static com.google.common.collect.Lists.newArrayList;
@@ -20,16 +19,14 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class BestPriceFinderTest {
+public class SynchApiTest {
 
     private List<Shop> shopsHalfOfProcessors;
     private int halfOfProcessors;
@@ -76,7 +73,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__serial_stream() {
+    public void with_serial_stream() {
 
         // when
         final Instant start = clock.instant();
@@ -96,7 +93,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__parallel_stream() {
+    public void with_parallel_stream() {
 
         // when
         final Instant start = clock.instant();
@@ -115,100 +112,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_asynch_api__futures() {
-
-        // when
-        final Instant start = clock.instant();
-
-        final List<CompletableFuture<String>> priceFutures =
-                shopService.findPriceFutures(shopsHalfOfProcessors, "my favorite product", ONE_SECOND);
-
-        final Instant invocationReturned = clock.instant();
-
-        // then
-        assertThat(priceFutures, hasSize(halfOfProcessors));
-
-        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
-
-        // when
-        final List<String> prices = priceFutures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList());
-
-        final Instant valuesRetrieved = clock.instant();
-
-        // then
-        assertThat(prices, hasSize(halfOfProcessors));
-
-        assertThat(
-                between(start, valuesRetrieved),
-                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
-    }
-
-    @Test
-    public void multiple_servers_asynch_api__futures__all_processors() {
-
-        // when
-        final Instant start = clock.instant();
-
-        final List<CompletableFuture<String>> priceFutures =
-                shopService.findPriceFutures(shopsAllProcessors, "my favorite product", ONE_SECOND);
-
-        final Instant invocationReturned = clock.instant();
-
-        // then
-        assertThat(priceFutures, hasSize(allProcessors));
-
-        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
-
-        // when
-        final List<String> prices = priceFutures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList());
-
-        final Instant valuesRetrieved = clock.instant();
-
-        // then
-        assertThat(prices, hasSize(allProcessors));
-
-        assertThat(
-                between(start, valuesRetrieved),
-                both(greaterThanOrEqualTo(TWO_SECONDS)).and(lessThan(TWO_AND_A_FIFTN_OF_SECOND)));
-    }
-
-    @Test
-    public void multiple_servers_asynch_api__futures__all_processors__with_executor() {
-
-        // when
-        final Instant start = clock.instant();
-
-        final List<CompletableFuture<String>> priceFutures =
-                shopService.findPriceFutures(shopsAllProcessors, "my favorite product", ONE_SECOND, executor);
-
-        final Instant invocationReturned = clock.instant();
-
-        // then
-        assertThat(priceFutures, hasSize(allProcessors));
-
-        assertThat(between(start, invocationReturned), lessThan(TENTH_OF_SECOND));
-
-        // when
-        final List<String> prices = priceFutures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.toList());
-
-        final Instant valuesRetrieved = clock.instant();
-
-        // then
-        assertThat(prices, hasSize(allProcessors));
-
-        assertThat(
-                between(start, valuesRetrieved),
-                both(greaterThanOrEqualTo(ONE_SECOND)).and(lessThan(ONE_AND_A_TENTH_OF_SECOND)));
-    }
-
-    @Test
-    public void multiple_servers_synch_api__futures() {
+    public void with_futures() {
 
         // when
         final Instant start = clock.instant();
@@ -227,7 +131,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__futures__all_processors() {
+    public void with_futures__all_processors() {
 
         // when
         final Instant start = clock.instant();
@@ -246,7 +150,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__futures__all_processors__with_executor() {
+    public void with_futures__all_processors__with_executor() {
 
         // when
         final Instant start = clock.instant();
@@ -265,7 +169,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__futures__broken() {
+    public void with_futures__broken() {
 
         // when
         final Instant start = clock.instant();
@@ -288,7 +192,7 @@ public class BestPriceFinderTest {
 
     @Test
     // processors
-    public void multiple_servers_synch_api__futures__fixed() {
+    public void with_futures__fixed() {
 
         // when
         final Instant start = clock.instant();
@@ -307,7 +211,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__futures__fixed__all_processors() {
+    public void with_futures__fixed__all_processors() {
 
         // when
         final Instant start = clock.instant();
@@ -329,7 +233,7 @@ public class BestPriceFinderTest {
     }
 
     @Test
-    public void multiple_servers_synch_api__futures__fixed__all_processors__with_executor() {
+    public void with_futures__fixed__all_processors__with_executor() {
 
         // when
         final Instant start = clock.instant();
