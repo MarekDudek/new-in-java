@@ -20,6 +20,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -38,6 +41,8 @@ public class PipleliningTest {
 
     private List<Shop> shopsTwiceTheProcessors;
     private int twiceTheProcessors;
+
+    private Executor executor;
 
     private Clock clock;
 
@@ -68,6 +73,15 @@ public class PipleliningTest {
             shopsTwiceTheProcessors.add(new Shop("Shop #" + i));
         }
         twiceTheProcessors = shopsTwiceTheProcessors.size();
+
+        executor = Executors.newFixedThreadPool(twiceTheProcessors, new ThreadFactory() {
+            @Override
+            public Thread newThread(final Runnable runnable) {
+                final Thread thread = new Thread(runnable);
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
 
         clock = systemUTC();
     }
@@ -166,5 +180,22 @@ public class PipleliningTest {
         assertThat(
                 between(start, valuesRetrieved),
                 both(greaterThanOrEqualTo(FOUR_SECONDS)).and(lessThan(FOUR_AND_A_TWO_FIFTNS_OF_SECOND)));
+    }
+
+    @Test
+    public void discounted_price__futures__twice_the_processors() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices = shopService.findDiscountedPricesFutures(shopsTwiceTheProcessors, "my favorite product", ONE_SECOND, ONE_SECOND, executor);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(twiceTheProcessors));
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThanOrEqualTo(TWO_SECONDS)).and(lessThan(TWO_AND_A_FIFTN_OF_SECOND)));
     }
 }

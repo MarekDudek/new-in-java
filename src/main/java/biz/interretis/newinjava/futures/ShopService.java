@@ -118,6 +118,37 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
+    public List<String> findDiscountedPricesFutures
+            (
+                    final List<Shop> shops,
+                    final String product,
+                    final Duration shopDelay,
+                    final Duration discountDelay,
+                    final Executor executor) {
+
+        final List<CompletableFuture<String>> futureDiscountedPrices = shops
+                .stream()
+                .map(shop -> CompletableFuture.supplyAsync(
+                        () -> shop.getPriceAndDiscountCode(product, shopDelay),
+                        executor
+                        )
+                )
+                .map(future -> future.thenApply(Quote::parse))
+                .map(future -> (CompletableFuture<String>) future.thenCompose(
+                        quote -> CompletableFuture.supplyAsync(
+                                () -> discountService.applyDiscount(quote, discountDelay),
+                                executor
+                                )
+                        )
+                )
+                .collect(Collectors.toList());
+
+        return futureDiscountedPrices
+                .stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
+    }
+
     private static Function<Shop, String> shopToPrice(final String product, final Duration shopDelay) {
 
         return shop -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, shopDelay));
