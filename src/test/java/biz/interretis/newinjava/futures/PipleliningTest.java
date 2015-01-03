@@ -1,6 +1,8 @@
 package biz.interretis.newinjava.futures;
 
 import static biz.interretis.newinjava.futures.ComputationsSimulator.ONE_SECOND;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_AND_A_FIFTN_OF_SECOND;
+import static biz.interretis.newinjava.futures.ComputationsSimulator.TWO_SECONDS;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.time.Clock.systemUTC;
 import static java.time.Duration.between;
@@ -76,12 +78,12 @@ public class PipleliningTest {
     }
 
     @Test
-    public void discount_service() {
+    public void discounted_price__serial() {
 
         // when
         final Instant start = clock.instant();
 
-        final List<String> prices = shopService.findDiscountedPrices(shopsHalfOfProcessors, "my favorite product", ONE_SECOND, ONE_SECOND);
+        final List<String> prices = shopService.findDiscountedPricesSerial(shopsHalfOfProcessors, "my favorite product", ONE_SECOND, ONE_SECOND);
 
         final Instant valuesRetrieved = clock.instant();
 
@@ -93,5 +95,22 @@ public class PipleliningTest {
                         greaterThanOrEqualTo(Duration.of(2 * halfOfProcessors, SECONDS))).and(
                         lessThan(Duration.of(2 * halfOfProcessors, SECONDS)
                                 .plus(Duration.of(2 * halfOfProcessors * 100, MILLIS)))));
+    }
+
+    @Test
+    public void discounted_price__parallel() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices = shopService.findDiscountedPricesParallel(shopsHalfOfProcessors, "my favorite product", ONE_SECOND, ONE_SECOND);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(halfOfProcessors));
+        assertThat(
+                between(start, valuesRetrieved),
+                both(greaterThanOrEqualTo(TWO_SECONDS)).and(lessThan(TWO_AND_A_FIFTN_OF_SECOND)));
     }
 }

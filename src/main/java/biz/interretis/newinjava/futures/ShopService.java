@@ -100,9 +100,18 @@ public class ShopService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> findDiscountedPrices(final List<Shop> shops, final String product, final Duration shopDelay, final Duration discountDelay) {
+    public List<String> findDiscountedPricesSerial(final List<Shop> shops, final String product, final Duration shopDelay, final Duration discountDelay) {
 
         return shops.stream()
+                .map(shop -> shop.getPriceAndDiscountCode(product, shopDelay))
+                .map(Quote::parse)
+                .map(quote -> discountService.applyDiscount(quote, discountDelay))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> findDiscountedPricesParallel(final List<Shop> shops, final String product, final Duration shopDelay, final Duration discountDelay) {
+
+        return shops.parallelStream()
                 .map(shop -> shop.getPriceAndDiscountCode(product, shopDelay))
                 .map(Quote::parse)
                 .map(quote -> discountService.applyDiscount(quote, discountDelay))
