@@ -15,6 +15,10 @@ public class ComputationsSimulator {
     public static final Duration TWO_SECONDS = Duration.ofSeconds(2);
     public static final Duration TWO_AND_A_FIFTN_OF_SECOND = TWO_SECONDS.plus(TENTH_OF_SECOND).plus(TENTH_OF_SECOND);
 
+    public static final Duration FOUR_SECONDS = Duration.ofSeconds(4);
+    public static final Duration FOUR_AND_A_TWO_FIFTNS_OF_SECOND =
+            FOUR_SECONDS.plus(TENTH_OF_SECOND).plus(TENTH_OF_SECOND).plus(TENTH_OF_SECOND).plus(TENTH_OF_SECOND);
+
     public static Integer doSomeLongComputation(final Duration duration) {
 
         delay(duration);

@@ -33,6 +33,7 @@ public class AsynchApiTest {
 
     private List<Shop> shopsAllProcessors;
     private int allProcessors;
+
     private Executor executor;
 
     private ShopService shopService;
@@ -56,8 +57,8 @@ public class AsynchApiTest {
         for (int i = 0; i < availableProcessors; i++) {
             shopsAllProcessors.add(new Shop("Shop #" + i));
         }
-
         allProcessors = shopsAllProcessors.size();
+
         executor = Executors.newFixedThreadPool(allProcessors, new ThreadFactory() {
             @Override
             public Thread newThread(final Runnable runnable) {
