@@ -17,7 +17,7 @@ public class ShopService {
 
         return shops
                 .stream()
-                .map(ShopToPriceMapper.shopToPrice(product, duration))
+                .map(shopToPrice(product, duration))
                 .collect(Collectors.toList());
     }
 
@@ -25,7 +25,7 @@ public class ShopService {
 
         return shops
                 .parallelStream()
-                .map(ShopToPriceMapper.shopToPrice(product, duration))
+                .map(shopToPrice(product, duration))
                 .collect(Collectors.toList());
     }
 
@@ -33,7 +33,7 @@ public class ShopService {
 
         return shops
                 .stream()
-                .map(ShopToFuturePriceMapper.shopToFuturePrice(product, duration))
+                .map(shopToFuturePrice(product, duration))
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +41,7 @@ public class ShopService {
 
         return shops
                 .stream()
-                .map(ShopToFuturePriceExecutorMapper.shopToFuturePriceExecutor(product, duration, executor))
+                .map(shopToFuturePriceExecutor(product, duration, executor))
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +49,7 @@ public class ShopService {
 
         final List<CompletableFuture<String>> priceFutures = shops
                 .stream()
-                .map(ShopToFuturePriceMapper.shopToFuturePrice(product, duration))
+                .map(shopToFuturePrice(product, duration))
                 .collect(Collectors.toList());
 
         return priceFutures
@@ -62,7 +62,7 @@ public class ShopService {
 
         final List<CompletableFuture<String>> priceFutures = shops
                 .stream()
-                .map(ShopToFuturePriceExecutorMapper.shopToFuturePriceExecutor(product, duration, executor))
+                .map(shopToFuturePriceExecutor(product, duration, executor))
                 .collect(Collectors.toList());
 
         return priceFutures
@@ -75,7 +75,7 @@ public class ShopService {
 
         return shops
                 .stream()
-                .map(ShopToFuturePriceMapper.shopToFuturePrice(product, duration))
+                .map(shopToFuturePrice(product, duration))
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }
@@ -84,7 +84,7 @@ public class ShopService {
 
         return shops
                 .parallelStream()
-                .map(ShopToFuturePriceMapper.shopToFuturePrice(product, duration))
+                .map(shopToFuturePrice(product, duration))
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }
@@ -93,92 +93,29 @@ public class ShopService {
 
         return shops
                 .parallelStream()
-                .map(ShopToFuturePriceExecutorMapper.shopToFuturePriceExecutor(product, duration, executor))
+                .map(shopToFuturePriceExecutor(product, duration, executor))
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
     }
 
-    private static class ShopToPriceMapper implements Function<Shop, String> {
+    private static Function<Shop, String> shopToPrice(final String product, final Duration duration) {
 
-        public static final ShopToPriceMapper shopToPrice
-                (
-                        final String product,
-                        final Duration duration
-                )
-        {
-            return new ShopToPriceMapper(product, duration);
-        }
-
-        private final Duration duration;
-        private final String product;
-
-        private ShopToPriceMapper(final String product, final Duration duration) {
-            this.product = product;
-            this.duration = duration;
-        }
-
-        @Override
-        public String apply(final Shop shop) {
-            return format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration));
-        }
+        return shop -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration));
     }
 
-    private static class ShopToFuturePriceMapper implements Function<Shop, CompletableFuture<String>> {
+    private static Function<Shop, CompletableFuture<String>> shopToFuturePrice(final String product, final Duration duration) {
 
-        public static final ShopToFuturePriceMapper shopToFuturePrice
-                (
-                        final String product,
-                        final Duration duration
-                )
-        {
-            return new ShopToFuturePriceMapper(product, duration);
-        }
-
-        private final Duration duration;
-        private final String product;
-
-        private ShopToFuturePriceMapper(final String product, final Duration duration) {
-            this.product = product;
-            this.duration = duration;
-        }
-
-        @Override
-        public CompletableFuture<String> apply(final Shop shop) {
-            return CompletableFuture.supplyAsync(
-                    () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
-                    );
-        }
+        return shop -> CompletableFuture.supplyAsync(
+                () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
+                );
     }
 
-    private static class ShopToFuturePriceExecutorMapper implements Function<Shop, CompletableFuture<String>> {
+    private static Function<Shop, CompletableFuture<String>> shopToFuturePriceExecutor(final String product, final Duration duration, final Executor executor) {
 
-        public static final ShopToFuturePriceExecutorMapper shopToFuturePriceExecutor
+        return shop -> CompletableFuture.supplyAsync
                 (
-                        final String product,
-                        final Duration duration,
-                        final Executor executor
-                )
-        {
-            return new ShopToFuturePriceExecutorMapper(product, duration, executor);
-        }
-
-        private final Duration duration;
-        private final String product;
-        private final Executor executor;
-
-        private ShopToFuturePriceExecutorMapper(final String product, final Duration duration, final Executor executor) {
-            this.product = product;
-            this.duration = duration;
-            this.executor = executor;
-        }
-
-        @Override
-        public CompletableFuture<String> apply(final Shop shop) {
-            return CompletableFuture.supplyAsync(
-                    () ->
-                    format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration))
-                    , executor
-                    );
-        }
+                        () -> format(PRICE_FORMAT, shop.getName(), shop.getPrice(product, duration)),
+                        executor
+                );
     }
 }
