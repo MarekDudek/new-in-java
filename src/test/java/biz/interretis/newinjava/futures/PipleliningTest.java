@@ -24,6 +24,7 @@ import org.junit.Test;
 public class PipleliningTest {
 
     private DiscountService discountService;
+    private ShopService shopService;
 
     private List<Shop> shopsHalfOfProcessors;
     private int halfOfProcessors;
@@ -36,6 +37,7 @@ public class PipleliningTest {
         // given
 
         discountService = new DiscountService();
+        shopService = new ShopService();
 
         final int availableProcessors = Runtime.getRuntime().availableProcessors();
 
@@ -49,7 +51,7 @@ public class PipleliningTest {
     }
 
     @Test
-    public void discount_service() {
+    public void discount_calculation() {
 
         // when
         final Instant start = clock.instant();
@@ -68,7 +70,27 @@ public class PipleliningTest {
         assertThat(
                 between(start, valuesRetrieved),
                 both(
-                        greaterThanOrEqualTo(Duration.of(halfOfProcessors, SECONDS))).and(
+                        greaterThanOrEqualTo(Duration.of(2 * halfOfProcessors, SECONDS))).and(
+                        lessThan(Duration.of(2 * halfOfProcessors, SECONDS)
+                                .plus(Duration.of(2 * halfOfProcessors * 100, MILLIS)))));
+    }
+
+    @Test
+    public void discount_service() {
+
+        // when
+        final Instant start = clock.instant();
+
+        final List<String> prices = shopService.findDiscountedPrices(shopsHalfOfProcessors, "my favorite product", ONE_SECOND, ONE_SECOND);
+
+        final Instant valuesRetrieved = clock.instant();
+
+        // then
+        assertThat(prices, hasSize(halfOfProcessors));
+        assertThat(
+                between(start, valuesRetrieved),
+                both(
+                        greaterThanOrEqualTo(Duration.of(2 * halfOfProcessors, SECONDS))).and(
                         lessThan(Duration.of(2 * halfOfProcessors, SECONDS)
                                 .plus(Duration.of(2 * halfOfProcessors * 100, MILLIS)))));
     }
